@@ -17,6 +17,7 @@ public class Money {
     }
 
     public static Money of(String value) {
+
         return new Money(new BigDecimal(value));
     }
 
@@ -24,11 +25,17 @@ public class Money {
         return amount;
     }
 
-    public Money add(Money other){
+    public Money add(Money other) {
+        if (other == null){
+            throw new IllegalArgumentException("Money to add cannot be null");
+        }
         return new Money(this.amount.add(other.amount));
     }
 
     public Money subtract(Money other){
+        if (other == null){
+            throw new IllegalArgumentException("Money to add cannot be null");
+        }
         return new Money(this.amount.subtract(other.amount));
     }
 
