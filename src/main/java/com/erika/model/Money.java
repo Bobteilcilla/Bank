@@ -16,6 +16,10 @@ public class Money {
         this.amount = amount;
     }
 
+    public static Money of(String value) {
+        return new Money(new BigDecimal(value));
+    }
+
     public BigDecimal getAmount(){
         return amount;
     }
