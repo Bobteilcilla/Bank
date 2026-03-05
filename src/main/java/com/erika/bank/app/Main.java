@@ -1,4 +1,4 @@
-package com.erika.app;
+package com.erika.bank.app;
 
 public class Main {
     public static void main(String[] args) {

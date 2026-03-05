@@ -1,10 +1,8 @@
-package com.erika.model;
+package com.erika.bank.model;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.stream.Collector;
 
 public class Account {
 

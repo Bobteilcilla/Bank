@@ -1,4 +1,4 @@
-package com.erika.model;
+package com.erika.bank.model;
 
 import java.math.BigDecimal;
 
