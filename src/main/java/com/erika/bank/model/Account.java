@@ -54,7 +54,7 @@ public class Account {
         requireTx(tx, TransactionType.WITHDRAW);
 
         // Business rule: cannot go below zero
-        if( balance.getAmount().compareTo(amount.getAmount()) < 0){
+        if( balance.compareTo(amount) < 0){
             throw new IllegalArgumentException("Insufficient funds");
         }
         balance = balance.subtract(amount);
@@ -63,6 +63,9 @@ public class Account {
 
     private void validatePositive(Money amount) {
         Objects.requireNonNull(amount, "Amount cannot be null");
+        if( amount.getAmount().signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
     }
 
     private void requireTx(Transaction tx, TransactionType expectedType){
