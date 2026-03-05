@@ -24,4 +24,24 @@ public class Transaction {
         this.amount = Objects.requireNonNull(amount);
         this.timestamp = Objects.requireNonNull(timestamp);
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public Money getAmount() {
+        return amount;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
 }
