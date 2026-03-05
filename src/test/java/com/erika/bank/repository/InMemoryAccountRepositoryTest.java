@@ -14,7 +14,7 @@ public class InMemoryAccountRepositoryTest {
     @Test
     void save_and_findById_works() {
 
-        InMemoryAccountRepository repo = new InMemoryAccountRepository();
+        AccountRepository repo = new InMemoryAccountRepository();
 
         Account account = new Account(
                 "A2",
