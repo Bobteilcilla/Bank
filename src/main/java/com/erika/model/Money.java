@@ -32,5 +32,9 @@ public class Money {
         return new Money(this.amount.subtract(other.amount));
     }
 
+    @Override
+    public String toString(){
+        return amount.toString();
+    }
 
 }
