@@ -2,7 +2,9 @@ package com.erika.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.stream.Collector;
 
 public class Account {
 
@@ -23,5 +25,21 @@ public class Account {
        this.id = id;
         this.ownerName = ownerName;
         this.balance = Objects.requireNonNull(initialBalance, "Initial balance cannot be null");
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getOwnerName(){
+        return ownerName;
+    }
+
+    public Money getBalance() {
+        return balance;
+    }
+
+    public List<Transaction> getTransactions(){
+        return Collections.unmodifiableList(transactions);
     }
 }
