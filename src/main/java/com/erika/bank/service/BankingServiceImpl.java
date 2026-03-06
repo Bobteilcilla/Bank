@@ -1,14 +1,10 @@
 package com.erika.bank.service;
 
-import com.erika.bank.model.Money;
-import com.erika.bank.model.Transaction;
-import com.erika.bank.model.Account;
-import com.erika.bank.model.TransactionType;
+import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
 
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +36,8 @@ public class BankingServiceImpl implements BankingService {
                     TransactionType.DEPOSIT,
                     accountId,
                     initialDeposit,
-                    Instant.now()
+                    Instant.now(),
+                    "Deposit to account " + accountId
             );
             account.deposit(initialDeposit, tx);
         }
@@ -64,7 +61,8 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.DEPOSIT,
                 accountId,
                 amount,
-                Instant.now()
+                Instant.now(),
+                "Deposit to account " + accountId
         );
         account.deposit(amount, tx);
         repo.save(account);
@@ -81,7 +79,8 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.WITHDRAW,
                 accountId,
                 amount,
-                Instant.now()
+                Instant.now(),
+                "Withdraw from account " + accountId
         );
         account.withdraw(amount, tx);
         repo.save(account);
@@ -103,7 +102,8 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.WITHDRAW,
                 fromAccountId,
                 amount,
-                Instant.now()
+                Instant.now(),
+                "Withdraw from account " + accountId
         );
 
         Transaction txDeposit = new Transaction(
@@ -111,7 +111,8 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.DEPOSIT,
                 toAccountId,
                 amount,
-                Instant.now()
+                Instant.now(),
+                "Deposit to account " + toAccountId
         );
 
         fromAccount.withdraw(amount, txWithdraw);
@@ -171,7 +172,7 @@ public class BankingServiceImpl implements BankingService {
         List<Transaction> recentTransactions = new ArrayList<>();
 
         if (days < 0) {
-            throw new IllegalArgumentException("Limit must be a positive number");
+            throw new IllegalArgumentException("Days must be zero or greater");
         }
 
         if (days == 0) {
@@ -182,11 +183,48 @@ public class BankingServiceImpl implements BankingService {
 
         List<Transaction> transactions = getTransactions(accountId);
         for (Transaction tx : transactions) {
-            if (tx.getTimestamp().isAfter(timeLimit)) {
+            if (!tx.getTimestamp().isBefore(timeLimit)) {
                 recentTransactions.add(tx);
             }
         }
         return recentTransactions;
+    }
+
+    @Override
+    public AccountStatement getAccountStatement(String accountId) {
+        Account account = findAccount(accountId);
+        List<Transaction> transactions = getTransactions(accountId);
+        return buildStatement(account, transactions);
+    }
+
+    @Override
+    public AccountStatement getAccountStatement(String accountId, int days) {
+        Account account = findAccount(accountId);
+        List<Transaction> transactions = getTransactionsFromLastDays(accountId, days);
+        return buildStatement(account, transactions);
+    }
+
+    private AccountStatement buildStatement(Account account, List<Transaction> transactions){
+        Money totalDeposits = Money.of("0.00");
+        Money totalWithdrawals = Money.of("0.00");
+
+        for (Transaction tx : transactions) {
+            if (tx.getType() == TransactionType.DEPOSIT) {
+                totalDeposits = totalDeposits.add(tx.getAmount());
+            } else if (tx.getType() == TransactionType.WITHDRAW) {
+                totalWithdrawals = totalWithdrawals.add(tx.getAmount());
+            }
+        }
+
+        return AccountStatement.builder()
+                .accountId(account.getId())
+                .ownerName(account.getOwnerName())
+                .balance(account.getBalance())
+                .transactionCount(transactions.size())
+                .totalDeposits(totalDeposits)
+                .totalWithdrawals(totalWithdrawals)
+                .transactions(transactions)
+                .build();
     }
 
     private Account findAccount(String accountId) {
