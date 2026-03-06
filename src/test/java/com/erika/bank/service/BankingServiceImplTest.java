@@ -20,9 +20,9 @@ public class BankingServiceImplTest {
     void setUp() {
         service = new BankingServiceImpl(new InMemoryAccountRepository());
     }
-        
+
     @Test
-    void create_account_sets_id_and_initial_balance(){
+    void create_account_sets_id_and_initial_balance() {
 
         String id = service.createAccount("Erika", Money.of("0.00"));
 
@@ -61,7 +61,7 @@ public class BankingServiceImplTest {
     }
 
     @Test
-    void deposit_records_correct_transaction_with_funds(){
+    void deposit_records_correct_transaction_with_funds() {
 
         String id = service.createAccount("Maria", Money.of("100.00"));
 
@@ -111,7 +111,7 @@ public class BankingServiceImplTest {
     }
 
     @Test
-    void withdraw_more_than_balance_throws(){
+    void withdraw_more_than_balance_throws() {
 
         String id = service.createAccount("Paco", Money.of("30.00"));
 
@@ -129,16 +129,16 @@ public class BankingServiceImplTest {
     }
 
     @Test
-    void transfer_to_same_account_throws(){
-       
+    void transfer_to_same_account_throws() {
+
         String accountId = service.createAccount("Erika", Money.of("20.00"));
 
         assertThrows(IllegalArgumentException.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
     }
 
     @Test
-    void transfer_more_than_balance_throws(){
-       
+    void transfer_more_than_balance_throws() {
+
         String fromAccountId = service.createAccount("Erika", Money.of("100.00"));
         String toAccountId = service.createAccount("Manolo", Money.of("50.00"));
 
@@ -146,8 +146,8 @@ public class BankingServiceImplTest {
     }
 
     @Test
-    void transfer_moves_money_between_accounts_and_records_transactions(){
-       
+    void transfer_moves_money_between_accounts_and_records_transactions() {
+
         String fromAccountId = service.createAccount("Erika", Money.of("100.00"));
         String toAccountId = service.createAccount("Manolo", Money.of("0.00"));
 
@@ -176,18 +176,17 @@ public class BankingServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0.00" , "-1.00", "-10.00"})
-    void withdraw_zero_or_negative_throws(String amount){
+    @ValueSource(strings = {"0.00", "-1.00", "-10.00"})
+    void withdraw_zero_or_negative_throws(String amount) {
 
         String id = service.createAccount("Erika", Money.of("40.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of(amount)));
         assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of(amount)));
 
     }
 
     @Test
-    void get_balance_for_unknown_account_throws(){
+    void get_balance_for_unknown_account_throws() {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.getBalance("unknown-account"));
