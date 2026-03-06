@@ -176,6 +176,7 @@ public class BankingServiceImplTest {
         assertEquals(TransactionType.WITHDRAW, withdrawTx.getType());
         assertEquals(fromAccountId, withdrawTx.getAccountId());
         assertEquals(Money.of("20.00"), withdrawTx.getAmount());
+        assertEquals("Withdraw from account " + fromAccountId, withdrawTx.getDescription());
 
         assertEquals(TransactionType.DEPOSIT, depositTx.getType());
         assertEquals(toAccountId, depositTx.getAccountId());
