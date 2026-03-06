@@ -90,12 +90,12 @@ public class BankingServiceImpl implements BankingService {
     public void transfer(String fromAccountId, String toAccountId, Money amount) {
         requirePositive(amount, "Transfer");
 
-        if (fromAccountId.equals(toAccountId)) {
-            throw new IllegalArgumentException("Cannot transfer to the same account");
-        }
-
         Account fromAccount = findAccount(fromAccountId);
         Account toAccount = findAccount(toAccountId);
+
+        if (fromAccount.getId().equals(toAccount.getId())) {
+            throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
 
         Transaction txWithdraw = new Transaction(
                 UUID.randomUUID().toString(),
