@@ -103,7 +103,7 @@ public class BankingServiceImpl implements BankingService {
                 fromAccountId,
                 amount,
                 Instant.now(),
-                "Withdraw from account " + accountId
+                "Withdraw from account " + fromAccountId
         );
 
         Transaction txDeposit = new Transaction(
