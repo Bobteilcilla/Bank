@@ -15,6 +15,8 @@ public interface BankingService {
 
     void withdraw(String accountId, Money amount);
 
+    void transfer(String fromAccountId, String toAccountId, Money amount);
+
     List<Transaction> getTransactions(String accountId);
 
 }
