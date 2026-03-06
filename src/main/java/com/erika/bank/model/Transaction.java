@@ -21,11 +21,10 @@ public class Transaction {
         }
 
         this.id = id;
-        this.type = Objects.requireNonNull(type);
-        ;
+        this.type = Objects.requireNonNull(type, "Transaction type cannot be null");
         this.accountId = accountId;
-        this.amount = Objects.requireNonNull(amount);
-        this.timestamp = Objects.requireNonNull(timestamp);
+        this.amount = Objects.requireNonNull(amount, "Transaction amount cannot be null");
+        this.timestamp = Objects.requireNonNull(timestamp, "Transaction timestamp cannot be null");
         this.description = description;
     }
 
