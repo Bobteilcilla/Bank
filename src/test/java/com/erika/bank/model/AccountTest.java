@@ -21,7 +21,8 @@ public class AccountTest {
                 TransactionType.DEPOSIT,
                 "A1",
                 Money.of("20.00"),
-                Instant.now()
+                Instant.now(),
+                "Deposit to account A1"
         );
 
         account.deposit(Money.of("20.00"), tx);
