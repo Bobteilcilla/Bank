@@ -19,7 +19,7 @@ public class Account {
             throw new IllegalArgumentException("Account id cannot be empty or null");
         }
         if(ownerName == null || ownerName.isBlank()){
-            throw new IllegalArgumentException("Account ownerName cannot be empry or null");
+            throw new IllegalArgumentException("Account ownerName cannot be empty or null");
         }
        this.id = id;
         this.ownerName = ownerName;
@@ -27,14 +27,17 @@ public class Account {
     }
 
     public String getId() {
+
         return id;
     }
 
     public String getOwnerName(){
+
         return ownerName;
     }
 
     public Money getBalance() {
+
         return balance;
     }
 
