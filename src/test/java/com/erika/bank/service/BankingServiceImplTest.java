@@ -37,8 +37,16 @@ public class BankingServiceImplTest {
 
         String id = service.createAccount("Erika", Money.of("100.00"));
 
+        var transactions = service.getTransactions(id);
+
+        assertEquals(1, transactions.size());
+
+        var tx = transactions.get(0);
+
+        assertEquals(id, tx.getAccountId());
+        assertEquals(TransactionType.DEPOSIT, tx.getType());
+        assertEquals(Money.of("100.00"), tx.getAmount());
         assertEquals(Money.of("100.00"), service.getBalance(id));
-        assertEquals(1, service.getTransactions(id).size());
     }
 
     @Test
