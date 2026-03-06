@@ -1,8 +1,6 @@
 package com.erika.bank.service;
 
-import com.erika.bank.model.Money;
-import com.erika.bank.model.Transaction;
-import com.erika.bank.model.TransactionType;
+import com.erika.bank.model.*;
 
 import java.time.Instant;
 import java.util.*;
@@ -27,4 +25,7 @@ public interface BankingService {
 
     List<Transaction> getTransactionsFromLastDays(String accountId, int days);
 
+    AccountStatement getAccountStatement(String accountId);
+
+    AccountStatement getAccountStatement(String accountId, int days);
 }
