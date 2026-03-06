@@ -4,15 +4,22 @@ package com.erika.bank.service;
 import com.erika.bank.model.Money;
 import com.erika.bank.model.TransactionType;
 import com.erika.bank.repository.InMemoryAccountRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BankingServiceImplTest {
 
+    private BankingService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new BankingServiceImpl(new InMemoryAccountRepository());
+    }
+        
     @Test
     void create_account_sets_id_and_initial_balance(){
-        BankingService service= new BankingServiceImpl(new InMemoryAccountRepository());
 
         String id = service.createAccount("Erika", Money.of("0.00"));
 
@@ -25,8 +32,6 @@ public class BankingServiceImplTest {
     @Test
     void create_account_with_initial_deposit_records_transaction() {
 
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
-
         String id = service.createAccount("Erika", Money.of("100.00"));
 
         assertEquals(Money.of("100.00"), service.getBalance(id));
@@ -35,7 +40,6 @@ public class BankingServiceImplTest {
 
     @Test
     void deposit_records_correct_transaction_with_no_funds() {
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         String id = service.createAccount("Maria", Money.of("0.00"));
 
@@ -56,8 +60,6 @@ public class BankingServiceImplTest {
     @Test
     void deposit_records_correct_transaction_with_funds(){
 
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
-
         String id = service.createAccount("Maria", Money.of("100.00"));
 
         service.deposit(id, Money.of("50.00"));
@@ -75,7 +77,6 @@ public class BankingServiceImplTest {
 
     @Test
     void deposit_increases_balance_and_records_transaction() {
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         String id = service.createAccount("Paco", Money.of("0.00"));
 
@@ -88,7 +89,6 @@ public class BankingServiceImplTest {
 
     @Test
     void withdraw_decreases_balance_and_records_transaction() {
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         String id = service.createAccount("Paco", Money.of("100.00"));
 
@@ -100,7 +100,6 @@ public class BankingServiceImplTest {
 
     @Test
     void withdraw_more_than_balance_throws(){
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         String id = service.createAccount("Paco", Money.of("30.00"));
 
@@ -109,7 +108,7 @@ public class BankingServiceImplTest {
 
     @Test
     void deposit_zero_or_negative_throws() {
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
+
         String id = service.createAccount("Erika", Money.of("0.00"));
 
         assertThrows(IllegalArgumentException.class, () -> service.deposit(id, Money.of("0.00")));
@@ -118,7 +117,7 @@ public class BankingServiceImplTest {
 
     @Test
     void transfer_to_same_account_throws(){
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
+       
         String accountId = service.createAccount("Erika", Money.of("20.00"));
 
         assertThrows(IllegalArgumentException.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
@@ -126,7 +125,7 @@ public class BankingServiceImplTest {
 
     @Test
     void transfer_more_than_balance_throws(){
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
+       
         String fromAccountId = service.createAccount("Erika", Money.of("100.00"));
         String toAccountId = service.createAccount("Manolo", Money.of("50.00"));
 
@@ -135,7 +134,7 @@ public class BankingServiceImplTest {
 
     @Test
     void transfer_moves_money_between_accounts_and_records_transactions(){
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
+       
         String fromAccountId = service.createAccount("Erika", Money.of("100.00"));
         String toAccountId = service.createAccount("Manolo", Money.of("0.00"));
 
@@ -166,8 +165,6 @@ public class BankingServiceImplTest {
     @Test
     void withdraw_zero_or_negative_throws(){
 
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
-
         String id = service.createAccount("Erika", Money.of("40.00"));
 
         assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of("-10.00")));
@@ -177,7 +174,6 @@ public class BankingServiceImplTest {
 
     @Test
     void get_balance_for_unknown_account_throws(){
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.getBalance("unknown-account"));
@@ -185,7 +181,6 @@ public class BankingServiceImplTest {
 
     @Test
     void deposit_to_unknown_account_throws() {
-        BankingService service = new BankingServiceImpl(new InMemoryAccountRepository());
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.deposit("unknown-account", Money.of("10.00")));
