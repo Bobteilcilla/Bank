@@ -8,6 +8,8 @@ import com.erika.bank.repository.AccountRepository;
 
 
 import java.time.Instant;
+import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -122,6 +124,69 @@ public class BankingServiceImpl implements BankingService {
     @Override
     public List<Transaction> getTransactions(String accountId) {
         return findAccount(accountId).getTransactions();
+    }
+
+    @Override
+    public List<Transaction> getTransactionsPerType(String accountId, TransactionType expectedType) {
+
+        List<Transaction> transactionsPerType = new ArrayList<>();
+
+        if (expectedType == null) {
+            throw new IllegalArgumentException("The transaction type cannot be null");
+        }
+
+        List<Transaction> transactions = getTransactions(accountId);
+        for (Transaction tx : transactions) {
+            if (tx.getType() == expectedType) {
+                transactionsPerType.add(tx);
+            }
+        }
+        return transactionsPerType;
+    }
+
+    @Override
+    public List<Transaction> getTransactionsBetween(String accountId, Instant fromTime, Instant toTime) {
+        List<Transaction> transactionsPerTimeRange = new ArrayList<>();
+
+        if (fromTime == null || toTime == null) {
+            throw new IllegalArgumentException("The timeframe cannot be null");
+        }
+
+        if (fromTime.isAfter(toTime)) {
+            throw new IllegalArgumentException("fromTime must be before toTime");
+        }
+
+        List<Transaction> transactions = getTransactions(accountId);
+        for (Transaction tx : transactions) {
+            Instant checkTime = tx.getTimestamp();
+            if (!checkTime.isBefore(fromTime) && !checkTime.isAfter(toTime)) {
+                transactionsPerTimeRange.add(tx);
+            }
+        }
+        return transactionsPerTimeRange;
+    }
+
+    @Override
+    public List<Transaction> getTransactionsFromLastDays(String accountId, int days) {
+        List<Transaction> recentTransactions = new ArrayList<>();
+
+        if (days < 0) {
+            throw new IllegalArgumentException("Limit must be a positive number");
+        }
+
+        if (days == 0) {
+           return getTransactions(accountId);
+        }
+        long toSeconds = (long) days * 24 * 60 * 60;
+        Instant timeLimit = Instant.now().minusSeconds(toSeconds);
+
+        List<Transaction> transactions = getTransactions(accountId);
+        for (Transaction tx : transactions) {
+            if (tx.getTimestamp().isAfter(timeLimit)) {
+                recentTransactions.add(tx);
+            }
+        }
+        return recentTransactions;
     }
 
     private Account findAccount(String accountId) {
