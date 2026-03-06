@@ -65,6 +65,7 @@ public class BankingServiceImplTest {
         assertEquals(id, tx.getAccountId());
         assertEquals(TransactionType.DEPOSIT, tx.getType());
         assertEquals(Money.of("50.00"), tx.getAmount());
+        assertEquals("Deposit to account " + id, tx.getDescription());
         assertEquals(Money.of("50.00"), service.getBalance(id));
     }
 
@@ -116,6 +117,10 @@ public class BankingServiceImplTest {
 
         assertEquals(Money.of(expectedBalance), service.getBalance(id));
         assertEquals(2, service.getTransactions(id).size());
+
+        var tx = service.getTransactions(id).get(1);
+        assertEquals("Withdraw from account " + id, tx.getDescription());
+
     }
 
     @Test
@@ -206,5 +211,23 @@ public class BankingServiceImplTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.deposit("unknown-account", Money.of("10.00")));
+    }
+
+    @Test
+    void transfer_with_null_source_account_throws() {
+
+        String toAccountId = service.createAccount("Manolo", Money.of("50.00"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.transfer(null, toAccountId, Money.of("10.00")));
+    }
+
+    @Test
+    void transfer_with_null_target_account_throws() {
+
+        String fromAccountId = service.createAccount("Erika", Money.of("50.00"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.transfer(fromAccountId, null, Money.of("10.00")));
     }
 }
