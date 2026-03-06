@@ -86,6 +86,40 @@ public class BankingServiceImpl implements BankingService {
     }
 
     @Override
+    public void transfer(String fromAccountId, String toAccountId, Money amount) {
+        requirePositive(amount, "Transfer");
+
+        if (fromAccountId.equals(toAccountId)) {
+            throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
+        Account fromAccount = findAccount(fromAccountId);
+        Account toAccount = findAccount(toAccountId);
+
+
+        Transaction txWithdraw = new Transaction(
+                UUID.randomUUID().toString(),
+                TransactionType.WITHDRAW,
+                fromAccountId,
+                amount,
+                Instant.now()
+        );
+
+        Transaction txDeposit = new Transaction(
+                UUID.randomUUID().toString(),
+                TransactionType.DEPOSIT,
+                toAccountId,
+                amount,
+                Instant.now()
+        );
+
+        fromAccount.withdraw(amount, txWithdraw);
+        toAccount.deposit(amount, txDeposit);
+
+        repo.save(fromAccount);
+        repo.save(toAccount);
+    }
+
+    @Override
     public List<Transaction> getTransactions(String accountId) {
         return findAccount(accountId).getTransactions();
     }
