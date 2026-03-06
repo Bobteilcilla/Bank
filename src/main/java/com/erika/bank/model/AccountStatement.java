@@ -13,37 +13,34 @@ public class AccountStatement {
     private final String ownerName;
     private final Money balance;
 
-    private final int transactionsCount;
-    private final Money totalWithdraws;
+    private final int transactionCount;
+    private final Money totalWithdrawals;
     private final Money totalDeposits;
-    private final List<Transaction> recentTransactions;
+    private final List<Transaction> transactions;
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Account Statement\n");
-        sb.append("-----------------\n");
-        sb.append("Account ID: ").append(accountId).append("\n");
-        sb.append("Owner: ").append(ownerName).append("\n");
-        sb.append("Balance: ").append(balance).append("\n\n");
+        sb.append("Account Statement\n")
+                .append("-----------------\n")
+                .append("Account ID: ").append(accountId).append("\n")
+                .append("Owner: ").append(ownerName).append("\n")
+                .append("Balance: ").append(balance).append("\n\n");
 
-        sb.append("Summary\n");
-        sb.append("-------\n");
-        sb.append("Transactions: ").append(transactionsCount).append("\n");
-        sb.append("Total Deposits: ").append(totalDeposits).append("\n");
-        sb.append("Total Withdrawals: ").append(totalWithdraws).append("\n\n");
+        sb.append("Summary\n")
+                .append("-------\n")
+                .append("Transactions: ").append(transactionCount).append("\n")
+                .append("Total Deposits: ").append(totalDeposits).append("\n")
+                .append("Total Withdrawals: ").append(totalWithdrawals).append("\n\n");
 
-        sb.append("Transactions\n");
-        sb.append("------------\n");
+        sb.append("Transactions\n")
+                .append("------------\n");
 
-        for (Transaction tx : recentTransactions) {
-            sb.append(tx.getTimestamp())
-                    .append(" | ")
-                    .append(tx.getType())
-                    .append(" | ")
-                    .append(tx.getAmount())
-                    .append("\n");
+        if (transactions != null) {
+            for (Transaction tx : transactions) {
+                sb.append(tx).append("\n");
+            }
         }
 
         return sb.toString();
