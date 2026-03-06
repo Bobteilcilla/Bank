@@ -6,6 +6,9 @@ import com.erika.bank.model.TransactionType;
 import com.erika.bank.repository.InMemoryAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -87,14 +90,23 @@ public class BankingServiceImplTest {
 
     }
 
-    @Test
-    void withdraw_decreases_balance_and_records_transaction() {
+    @ParameterizedTest
+    @CsvSource({
+            "100.00, 50.00, 50.00",
+            "100.00, 20.00, 80.00",
+            "200.00, 100.00, 100.00"
+    })
+    void withdraw_decreases_balance_and_records_transaction(
+            String initialBalance,
+            String withdrawAmount,
+            String expectedBalance
+    ) {
 
-        String id = service.createAccount("Paco", Money.of("100.00"));
+        String id = service.createAccount("Paco", Money.of(initialBalance));
 
-        service.withdraw(id, Money.of("50.00"));
+        service.withdraw(id, Money.of(withdrawAmount));
 
-        assertEquals(Money.of("50.00"), service.getBalance(id));
+        assertEquals(Money.of(expectedBalance), service.getBalance(id));
         assertEquals(2, service.getTransactions(id).size());
     }
 
@@ -106,13 +118,14 @@ public class BankingServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of("50.00")));
     }
 
-    @Test
-    void deposit_zero_or_negative_throws() {
+    @ParameterizedTest
+    @ValueSource(strings = {"0.00", "-1.00", "-10.00"})
+    void deposit_zero_or_negative_throws(String amount) {
 
         String id = service.createAccount("Erika", Money.of("0.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.deposit(id, Money.of("0.00")));
-        assertThrows(IllegalArgumentException.class, () -> service.deposit(id, Money.of("-1.00")));
+        assertThrows(IllegalArgumentException.class, () -> service.deposit(id, Money.of(amount)));
+
     }
 
     @Test
@@ -162,13 +175,14 @@ public class BankingServiceImplTest {
 
     }
 
-    @Test
-    void withdraw_zero_or_negative_throws(){
+    @ParameterizedTest
+    @ValueSource(strings = {"0.00" , "-1.00", "-10.00"})
+    void withdraw_zero_or_negative_throws(String amount){
 
         String id = service.createAccount("Erika", Money.of("40.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of("-10.00")));
-        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of("0.00")));
+        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of(amount)));
+        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of(amount)));
 
     }
 
