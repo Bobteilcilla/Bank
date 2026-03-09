@@ -1,9 +1,12 @@
 package com.erika.bank.service;
 
+import com.erika.bank.exceptions.AccountNotFoundException;
+import com.erika.bank.exceptions.InvalidTimeRangeException;
 import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
 
+import java.nio.channels.AcceptPendingException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -150,11 +153,11 @@ public class BankingServiceImpl implements BankingService {
         List<Transaction> transactionsPerTimeRange = new ArrayList<>();
 
         if (fromTime == null || toTime == null) {
-            throw new IllegalArgumentException("The timeframe cannot be null");
+            throw new InvalidTimeRangeException("The timeframe cannot be null");
         }
 
         if (fromTime.isAfter(toTime)) {
-            throw new IllegalArgumentException("fromTime must be before toTime");
+            throw new InvalidTimeRangeException("fromTime must be before toTime");
         }
 
         List<Transaction> transactions = getTransactions(accountId);
@@ -233,7 +236,7 @@ public class BankingServiceImpl implements BankingService {
         }
 
         return repo.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountId));
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
     private void requirePositive(Money amount, String operationName) {
