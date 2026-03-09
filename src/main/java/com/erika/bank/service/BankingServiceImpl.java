@@ -7,6 +7,7 @@ import com.erika.bank.exceptions.InvalidTransferTarget;
 import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +17,15 @@ import java.util.UUID;
 public class BankingServiceImpl implements BankingService {
 
     private final AccountRepository repo;
+    private final Clock clock;
+
+    public BankingServiceImpl(AccountRepository repo, Clock clock) {
+        this.repo = Objects.requireNonNull(repo, "Repo cannot be null");
+        this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
+    }
 
     public BankingServiceImpl(AccountRepository repo) {
-        this.repo = Objects.requireNonNull(repo, "Repo cannot be null");
+        this(repo, Clock.systemUTC());
     }
 
     @Override
@@ -39,7 +46,7 @@ public class BankingServiceImpl implements BankingService {
                     TransactionType.DEPOSIT,
                     accountId,
                     initialDeposit,
-                    Instant.now(),
+                    Instant.now(clock),
                     "Deposit to account " + accountId
             );
             account.deposit(initialDeposit, tx);
@@ -64,7 +71,7 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.DEPOSIT,
                 accountId,
                 amount,
-                Instant.now(),
+                Instant.now(clock),
                 "Deposit to account " + accountId
         );
         account.deposit(amount, tx);
@@ -82,7 +89,7 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.WITHDRAW,
                 accountId,
                 amount,
-                Instant.now(),
+                Instant.now(clock),
                 "Withdraw from account " + accountId
         );
         account.withdraw(amount, tx);
@@ -105,7 +112,7 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.WITHDRAW,
                 fromAccountId,
                 amount,
-                Instant.now(),
+                Instant.now(clock),
                 "Withdraw from account " + fromAccountId
         );
 
@@ -114,7 +121,7 @@ public class BankingServiceImpl implements BankingService {
                 TransactionType.DEPOSIT,
                 toAccountId,
                 amount,
-                Instant.now(),
+                Instant.now(clock),
                 "Deposit to account " + toAccountId
         );
 
@@ -182,7 +189,7 @@ public class BankingServiceImpl implements BankingService {
             return new ArrayList<>();
         }
         long toSeconds = (long) days * 24 * 60 * 60;
-        Instant timeLimit = Instant.now().minusSeconds(toSeconds);
+        Instant timeLimit = Instant.now(clock).minusSeconds(toSeconds);
 
         List<Transaction> transactions = getTransactions(accountId);
         for (Transaction tx : transactions) {
