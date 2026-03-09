@@ -1,7 +1,9 @@
 package com.erika.bank.service;
 
 import com.erika.bank.exceptions.AccountNotFoundException;
+import com.erika.bank.exceptions.InvalidAmountException;
 import com.erika.bank.exceptions.InvalidTimeRangeException;
+import com.erika.bank.exceptions.InvalidTransferTarget;
 import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
@@ -17,7 +19,7 @@ public class BankingServiceImpl implements BankingService {
 
     private final AccountRepository repo;
 
-    public BankingServiceImpl(AccountRepository repo){
+    public BankingServiceImpl(AccountRepository repo) {
         this.repo = Objects.requireNonNull(repo, "Repo cannot be null");
     }
 
@@ -33,8 +35,8 @@ public class BankingServiceImpl implements BankingService {
         Account account = new Account(accountId, ownerName, Money.of("0.00"));
 
         //We record the initial deposit as a transaction if the initialDeposit > 0
-        if ( initialDeposit.getAmount().signum() > 0 ){
-            Transaction tx = new Transaction (
+        if (initialDeposit.getAmount().signum() > 0) {
+            Transaction tx = new Transaction(
                     UUID.randomUUID().toString(),
                     TransactionType.DEPOSIT,
                     accountId,
@@ -97,7 +99,7 @@ public class BankingServiceImpl implements BankingService {
         Account toAccount = findAccount(toAccountId);
 
         if (fromAccount.getId().equals(toAccount.getId())) {
-            throw new IllegalArgumentException("Cannot transfer to the same account");
+            throw new InvalidTransferTarget(fromAccountId);
         }
 
         Transaction txWithdraw = new Transaction(
@@ -179,7 +181,7 @@ public class BankingServiceImpl implements BankingService {
         }
 
         if (days == 0) {
-           return getTransactions(accountId);
+            return getTransactions(accountId);
         }
         long toSeconds = (long) days * 24 * 60 * 60;
         Instant timeLimit = Instant.now().minusSeconds(toSeconds);
@@ -207,7 +209,7 @@ public class BankingServiceImpl implements BankingService {
         return buildStatement(account, transactions);
     }
 
-    private AccountStatement buildStatement(Account account, List<Transaction> transactions){
+    private AccountStatement buildStatement(Account account, List<Transaction> transactions) {
         Money totalDeposits = Money.of("0.00");
         Money totalWithdrawals = Money.of("0.00");
 
@@ -240,12 +242,9 @@ public class BankingServiceImpl implements BankingService {
     }
 
     private void requirePositive(Money amount, String operationName) {
-        if (amount == null) {
-            throw new IllegalArgumentException(operationName + " amount cannot be null");
+        if (amount == null || amount.getAmount().signum() <= 0) {
+            throw new InvalidAmountException(operationName);
         }
-        if (amount.getAmount().signum() <= 0) {
-            throw new IllegalArgumentException(operationName + " amount must be > 0");
-        }
-    }
 
+    }
 }
