@@ -15,15 +15,21 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BankingServiceImplTest {
 
     private BankingService service;
+    private Clock clock;
 
     @BeforeEach
     void setUp() {
-        service = new BankingServiceImpl(new InMemoryAccountRepository());
+        clock = Clock.fixed(Instant.parse("2026-03-09T10:00:00Z"), ZoneOffset.UTC);
+        service = new BankingServiceImpl(new InMemoryAccountRepository(), clock);
     }
 
     @Test
@@ -250,6 +256,44 @@ public class BankingServiceImplTest {
         String id = service.createAccount("Erika", Money.of("50.00"));
 
         assertTrue(service.getTransactionsFromLastDays(id, 0).isEmpty());
+    }
+
+    @Test
+    void get_transactions_from_last_days_includes_transaction_exactly_at_cutoff() {
+        InMemoryAccountRepository repo = new InMemoryAccountRepository();
+
+        Instant txTime = Instant.parse("2026-03-08T10:00:00Z");
+        Clock txClock = Clock.fixed(txTime, ZoneOffset.UTC);
+        BankingService writer = new BankingServiceImpl(repo, txClock);
+
+        String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
+
+        Instant queryNow = Instant.parse("2026-03-09T10:00:00Z"); // exactly +1 day
+        Clock queryClock = Clock.fixed(queryNow, ZoneOffset.UTC);
+        BankingService reader = new BankingServiceImpl(repo, queryClock);
+
+        var result = reader.getTransactionsFromLastDays(id, 1);
+
+        assertEquals(1, result.size()); // included at exact cutoff
+    }
+
+    @Test
+    void get_transactions_from_last_days_excludes_transaction_before_cutoff() {
+        InMemoryAccountRepository repo = new InMemoryAccountRepository();
+
+        Instant txTime = Instant.parse("2026-03-08T09:59:59Z");
+        Clock txClock = Clock.fixed(txTime, ZoneOffset.UTC);
+        BankingService writer = new BankingServiceImpl(repo, txClock);
+
+        String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
+
+        Instant queryNow = Instant.parse("2026-03-09T10:00:00Z"); // exactly +1 day
+        Clock queryClock = Clock.fixed(queryNow, ZoneOffset.UTC);
+        BankingService reader = new BankingServiceImpl(repo, queryClock);
+
+        var result = reader.getTransactionsFromLastDays(id, 1);
+
+        assertTrue(result.isEmpty()); // included at exact cutoff
     }
 
     @Test
