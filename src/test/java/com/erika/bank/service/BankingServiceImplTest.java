@@ -262,17 +262,46 @@ public class BankingServiceImplTest {
     void get_transactions_from_last_days_includes_transaction_exactly_at_cutoff() {
         InMemoryAccountRepository repo = new InMemoryAccountRepository();
 
-        Instant txTime = Instant.parse("2026-03-08T10:00:00Z");
-        Clock txClock = Clock.fixed(txTime, ZoneOffset.UTC);
-        BankingService writer = new BankingServiceImpl(repo, txClock);
+        BankingService writer = createServiceAt(repo, Instant.parse("2026-03-08T10:00:00Z"));
 
         String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
 
-        Instant queryNow = Instant.parse("2026-03-09T10:00:00Z"); // exactly +1 day
-        Clock queryClock = Clock.fixed(queryNow, ZoneOffset.UTC);
-        BankingService reader = new BankingServiceImpl(repo, queryClock);
+        BankingService reader = createServiceAt(repo, Instant.parse("2026-03-09T10:00:00Z"));
 
         var result = reader.getTransactionsFromLastDays(id, 1);
+
+        assertEquals(1, result.size()); // included at exact cutoff
+    }
+
+    @Test
+    void get_transactions_between_includes_transaction_exactly_at_from_time() {
+        InMemoryAccountRepository repo = new InMemoryAccountRepository();
+
+        Instant fromTime = Instant.parse("2026-03-08T10:00:01Z");
+        BankingService writer = createServiceAt(repo, fromTime);
+
+        String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
+
+        Instant toTime = Instant.parse("2026-03-09T10:00:00Z"); // exactly +1 day
+        BankingService reader = createServiceAt(repo, toTime);
+
+        var result = reader.getTransactionsBetween(id, fromTime, toTime);
+
+        assertEquals(1, result.size()); // included at exact cutoff
+    }
+
+    @Test
+    void get_transactions_between_includes_transaction_exactly_at_to_time() {
+        InMemoryAccountRepository repo = new InMemoryAccountRepository();
+
+        Instant fromTime = Instant.parse("2026-03-08T10:00:00Z");
+        Instant toTime = Instant.parse("2026-03-09T10:00:00Z");
+
+        BankingService writer = createServiceAt(repo, toTime);
+
+        String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
+
+        var result = writer.getTransactionsBetween(id, fromTime, toTime);
 
         assertEquals(1, result.size()); // included at exact cutoff
     }
@@ -281,19 +310,15 @@ public class BankingServiceImplTest {
     void get_transactions_from_last_days_excludes_transaction_before_cutoff() {
         InMemoryAccountRepository repo = new InMemoryAccountRepository();
 
-        Instant txTime = Instant.parse("2026-03-08T09:59:59Z");
-        Clock txClock = Clock.fixed(txTime, ZoneOffset.UTC);
-        BankingService writer = new BankingServiceImpl(repo, txClock);
+        BankingService writer = createServiceAt(repo, Instant.parse("2026-03-08T09:59:59Z"));
 
         String id = writer.createAccount("Erika", Money.of("10.00")); // creates 1 deposit tx at txTime
 
-        Instant queryNow = Instant.parse("2026-03-09T10:00:00Z"); // exactly +1 day
-        Clock queryClock = Clock.fixed(queryNow, ZoneOffset.UTC);
-        BankingService reader = new BankingServiceImpl(repo, queryClock);
+        BankingService reader = createServiceAt(repo, Instant.parse("2026-03-09T10:00:00Z"));
 
         var result = reader.getTransactionsFromLastDays(id, 1);
 
-        assertTrue(result.isEmpty()); // included at exact cutoff
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -303,5 +328,10 @@ public class BankingServiceImplTest {
         AccountStatement statement = service.getAccountStatement(id);
 
         assertThrows(UnsupportedOperationException.class, () -> statement.getTransactions().clear());
+    }
+
+    private BankingService createServiceAt(InMemoryAccountRepository repo, Instant instant){
+        Clock clock = Clock.fixed(instant, ZoneOffset.UTC);
+        return new BankingServiceImpl(repo, clock);
     }
 }
