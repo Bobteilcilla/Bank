@@ -1,6 +1,11 @@
 package com.erika.bank.service;
 
 
+import com.erika.bank.exceptions.AccountNotFoundException;
+import com.erika.bank.exceptions.InsufficientFundsException;
+import com.erika.bank.exceptions.InvalidAmountException;
+import com.erika.bank.exceptions.InvalidTransferTarget;
+import com.erika.bank.model.AccountStatement;
 import com.erika.bank.model.Money;
 import com.erika.bank.model.TransactionType;
 import com.erika.bank.repository.InMemoryAccountRepository;
@@ -128,17 +133,21 @@ public class BankingServiceImplTest {
 
         String id = service.createAccount("Paco", Money.of("30.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of("50.00")));
+        assertThrows(InsufficientFundsException.class, () -> service.withdraw(id, Money.of("50.00")));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"0.00", "-1.00", "-10.00"})
-    void deposit_zero_or_negative_throws(String amount) {
+    @Test
+    void deposit_zero_throws_invalid_amount() {
 
         String id = service.createAccount("Erika", Money.of("0.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.deposit(id, Money.of(amount)));
+        assertThrows(InvalidAmountException.class, () -> service.deposit(id, Money.of("0.00")));
+    }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"-1.00", "-10.00"})
+    void deposit_negative_amount_fails_in_money_constructor(String amount) {
+        assertThrows(IllegalArgumentException.class, () -> service.deposit("any", Money.of(amount)));
     }
 
     @Test
@@ -146,7 +155,7 @@ public class BankingServiceImplTest {
 
         String accountId = service.createAccount("Erika", Money.of("20.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
+        assertThrows(InvalidTransferTarget.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
     }
 
     @Test
@@ -155,7 +164,7 @@ public class BankingServiceImplTest {
         String fromAccountId = service.createAccount("Erika", Money.of("100.00"));
         String toAccountId = service.createAccount("Manolo", Money.of("50.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.transfer(fromAccountId, toAccountId, Money.of("200.00")));
+        assertThrows(InsufficientFundsException.class, () -> service.transfer(fromAccountId, toAccountId, Money.of("200.00")));
     }
 
     @Test
@@ -189,27 +198,32 @@ public class BankingServiceImplTest {
 
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"0.00", "-1.00", "-10.00"})
-    void withdraw_zero_or_negative_throws(String amount) {
+    @Test
+    void withdraw_zero_throws_invalid_amount() {
 
         String id = service.createAccount("Erika", Money.of("40.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> service.withdraw(id, Money.of(amount)));
+        assertThrows(InvalidAmountException.class, () -> service.withdraw(id, Money.of("0.00")));
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"-1.00", "-10.00"})
+    void withdraw_negative_amount_fails_in_money_constructor(String amount) {
+        assertThrows(IllegalArgumentException.class, () -> service.withdraw("any", Money.of(amount)));
     }
 
     @Test
     void get_balance_for_unknown_account_throws() {
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(AccountNotFoundException.class,
                 () -> service.getBalance("unknown-account"));
     }
 
     @Test
     void deposit_to_unknown_account_throws() {
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(AccountNotFoundException.class,
                 () -> service.deposit("unknown-account", Money.of("10.00")));
     }
 
@@ -229,5 +243,21 @@ public class BankingServiceImplTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.transfer(fromAccountId, null, Money.of("10.00")));
+    }
+
+    @Test
+    void get_transactions_from_last_days_zero_returns_empty_list() {
+        String id = service.createAccount("Erika", Money.of("50.00"));
+
+        assertTrue(service.getTransactionsFromLastDays(id, 0).isEmpty());
+    }
+
+    @Test
+    void account_statement_transactions_are_unmodifiable() {
+        String id = service.createAccount("Erika", Money.of("10.00"));
+        service.deposit(id, Money.of("5.00"));
+        AccountStatement statement = service.getAccountStatement(id);
+
+        assertThrows(UnsupportedOperationException.class, () -> statement.getTransactions().clear());
     }
 }
