@@ -33,6 +33,18 @@ public class BankingServiceImplTest {
     }
 
     @Test
+    void create_account_invalid_inputs() {
+        assertAll("create account invalid inputs",
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.createAccount(null, Money.of("0.00"))),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.createAccount("", Money.of("0.00"))),
+                () -> assertThrows(NullPointerException.class,
+                        () -> service.createAccount("Erica", null))
+        );
+    }
+
+    @Test
     void create_account_sets_id_and_initial_balance() {
 
         String id = service.createAccount("Erika", Money.of("0.00"));
