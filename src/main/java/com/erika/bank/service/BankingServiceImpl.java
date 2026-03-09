@@ -7,8 +7,6 @@ import com.erika.bank.exceptions.InvalidTransferTarget;
 import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
-
-import java.nio.channels.AcceptPendingException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -181,7 +179,7 @@ public class BankingServiceImpl implements BankingService {
         }
 
         if (days == 0) {
-            return getTransactions(accountId);
+            return new ArrayList<>();
         }
         long toSeconds = (long) days * 24 * 60 * 60;
         Instant timeLimit = Instant.now().minusSeconds(toSeconds);
@@ -228,7 +226,7 @@ public class BankingServiceImpl implements BankingService {
                 .transactionCount(transactions.size())
                 .totalDeposits(totalDeposits)
                 .totalWithdrawals(totalWithdrawals)
-                .transactions(transactions)
+                .transactions(List.copyOf(transactions))
                 .build();
     }
 
