@@ -29,7 +29,10 @@ public class Account {
         }
        this.id = id;
         this.ownerName = ownerName;
-        this.balance = Objects.requireNonNull(initialBalance, "Initial balance cannot be null");
+        if (initialBalance == null) {
+            throw new IllegalArgumentException("Initial balance cannot be null");
+        }
+        this.balance = initialBalance;
     }
 
     public List<Transaction> getTransactions(){

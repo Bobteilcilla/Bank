@@ -33,7 +33,9 @@ public class BankingServiceImpl implements BankingService {
         if (ownerName == null || ownerName.isBlank()) {
             throw new IllegalArgumentException("Owner name cannot be null/blank");
         }
-        Objects.requireNonNull(initialDeposit, "Initial deposit cannot be null");
+        if (initialDeposit == null) {
+            throw new IllegalArgumentException("Initial deposit cannot be null");
+        }
 
         String accountId = UUID.randomUUID().toString();
 

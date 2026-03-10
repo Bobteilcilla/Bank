@@ -40,7 +40,7 @@ public class BankingServiceImplTest {
                         () -> service.createAccount(null, Money.of("0.00"))),
                 () -> assertThrows(IllegalArgumentException.class,
                         () -> service.createAccount("", Money.of("0.00"))),
-                () -> assertThrows(NullPointerException.class,
+                () -> assertThrows(IllegalArgumentException.class,
                         () -> service.createAccount("Erica", null))
         );
     }
