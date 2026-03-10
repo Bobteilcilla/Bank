@@ -5,7 +5,7 @@ import com.erika.bank.exceptions.AccountNotFoundException;
 import com.erika.bank.exceptions.InsufficientFundsException;
 import com.erika.bank.exceptions.InvalidAmountException;
 import com.erika.bank.exceptions.InvalidTimeRangeException;
-import com.erika.bank.exceptions.InvalidTransferTarget;
+import com.erika.bank.exceptions.InvalidTransferTargetException;
 import com.erika.bank.model.AccountStatement;
 import com.erika.bank.model.Money;
 import com.erika.bank.model.TransactionType;
@@ -174,7 +174,7 @@ public class BankingServiceImplTest {
 
         String accountId = service.createAccount("Erika", Money.of("20.00"));
 
-        assertThrows(InvalidTransferTarget.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
+        assertThrows(InvalidTransferTargetException.class, () -> service.transfer(accountId, accountId, Money.of("10.00")));
     }
 
     @Test
