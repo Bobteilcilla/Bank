@@ -29,12 +29,14 @@ public class BankingServiceImplTest {
 
     @BeforeEach
     void setUp() {
+
         clock = Clock.fixed(Instant.parse("2026-03-09T10:00:00Z"), ZoneOffset.UTC);
         service = new BankingServiceImpl(new InMemoryAccountRepository(), clock);
     }
 
     @Test
     void create_account_invalid_inputs() {
+
         assertAll("create account invalid inputs",
                 () -> assertThrows(IllegalArgumentException.class,
                         () -> service.createAccount(null, Money.of("0.00"))),
@@ -43,6 +45,16 @@ public class BankingServiceImplTest {
                 () -> assertThrows(IllegalArgumentException.class,
                         () -> service.createAccount("Erica", null))
         );
+    }
+
+    @Test
+    void create_account_owner_name_is_blank() {
+
+        assertThrows(IllegalArgumentException.class, () -> service.createAccount(
+                " ",
+                Money.of("30.00")
+        ));
+
     }
 
     @Test
