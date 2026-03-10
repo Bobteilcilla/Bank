@@ -3,7 +3,7 @@ package com.erika.bank.service;
 import com.erika.bank.exceptions.AccountNotFoundException;
 import com.erika.bank.exceptions.InvalidAmountException;
 import com.erika.bank.exceptions.InvalidTimeRangeException;
-import com.erika.bank.exceptions.InvalidTransferTarget;
+import com.erika.bank.exceptions.InvalidTransferTargetException;
 import com.erika.bank.model.*;
 import com.erika.bank.repository.AccountRepository;
 
@@ -104,7 +104,7 @@ public class BankingServiceImpl implements BankingService {
         Account toAccount = findAccount(toAccountId);
 
         if (fromAccount.getId().equals(toAccount.getId())) {
-            throw new InvalidTransferTarget(fromAccountId);
+            throw new InvalidTransferTargetException(fromAccountId);
         }
 
         Transaction txWithdraw = new Transaction(
