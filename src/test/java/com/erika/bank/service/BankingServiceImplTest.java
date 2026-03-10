@@ -4,6 +4,7 @@ package com.erika.bank.service;
 import com.erika.bank.exceptions.AccountNotFoundException;
 import com.erika.bank.exceptions.InsufficientFundsException;
 import com.erika.bank.exceptions.InvalidAmountException;
+import com.erika.bank.exceptions.InvalidTimeRangeException;
 import com.erika.bank.exceptions.InvalidTransferTarget;
 import com.erika.bank.model.AccountStatement;
 import com.erika.bank.model.Money;
@@ -331,6 +332,79 @@ public class BankingServiceImplTest {
         var result = reader.getTransactionsFromLastDays(id, 1);
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void get_transactions_per_type_returns_only_deposits() {
+        String fromId = service.createAccount("Erika", Money.of("100.00"));
+
+        service.deposit(fromId, Money.of("50.00"));
+        service.withdraw(fromId, Money.of("20.00"));
+
+        var deposits = service.getTransactionsPerType(fromId, TransactionType.DEPOSIT);
+
+        assertEquals(2, deposits.size());
+        assertTrue(deposits.stream().allMatch(tx -> tx.getType() == TransactionType.DEPOSIT));
+    }
+
+    @Test
+    void get_transactions_per_type_returns_only_withdrawals() {
+        String fromId = service.createAccount("Erika", Money.of("100.00"));
+        String toId = service.createAccount("Sebastian", Money.of("0.00"));
+
+        service.withdraw(fromId, Money.of("20.00"));
+        service.transfer(fromId, toId, Money.of("10.00"));
+
+        var withdrawals = service.getTransactionsPerType(fromId, TransactionType.WITHDRAW);
+
+        assertEquals(2, withdrawals.size());
+        assertTrue(withdrawals.stream().allMatch(tx -> tx.getType() == TransactionType.WITHDRAW));
+    }
+
+    @Test
+    void get_transactions_per_type_with_null_type_throws() {
+        String accountId = service.createAccount("Erika", Money.of("100.00"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.getTransactionsPerType(accountId, null));
+    }
+
+    @Test
+    void get_transactions_between_invalid_ranges_throw() {
+        String accountId = service.createAccount("Erika", Money.of("10.00"));
+        Instant now = Instant.now(clock);
+
+        assertAll("invalid time ranges",
+                () -> assertThrows(InvalidTimeRangeException.class,
+                        () -> service.getTransactionsBetween(accountId, null, now)),
+                () -> assertThrows(InvalidTimeRangeException.class,
+                        () -> service.getTransactionsBetween(accountId, now, null)),
+                () -> assertThrows(InvalidTimeRangeException.class,
+                        () -> service.getTransactionsBetween(accountId, now.plusSeconds(1), now))
+        );
+    }
+
+    @Test
+    void test_mix_transactions() {
+
+        String fromId = service.createAccount("Erika", Money.of("100.00")); // creates 1 deposit tx at txTime
+
+        String toId =  service.createAccount("Sebastian", Money.of("50.00"));
+
+        service.deposit(fromId, Money.of("50.00"));
+        service.deposit(fromId, Money.of("30.00"));
+
+        service.withdraw(fromId, Money.of("20.00"));
+
+        service.transfer(fromId, toId, Money.of("10.00"));
+
+        AccountStatement statement = service.getAccountStatement(fromId);
+
+        assertEquals(5, service.getTransactions(fromId).size());
+        assertEquals(Money.of("180.00"),statement.getTotalDeposits());
+        assertEquals(Money.of("30.00"),statement.getTotalWithdrawals());
+        assertEquals(Money.of("150.00"), service.getBalance(fromId));
+
     }
 
     @Test
