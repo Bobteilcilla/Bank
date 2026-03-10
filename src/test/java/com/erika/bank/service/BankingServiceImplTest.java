@@ -385,7 +385,7 @@ public class BankingServiceImplTest {
     }
 
     @Test
-    void test_mix_transactions() {
+    void account_statement_totals_are_correct_for_mixed_flow() {
 
         String fromId = service.createAccount("Erika", Money.of("100.00")); // creates 1 deposit tx at txTime
 
