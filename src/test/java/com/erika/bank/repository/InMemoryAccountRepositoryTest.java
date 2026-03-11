@@ -4,7 +4,6 @@ import com.erika.bank.model.Account;
 import com.erika.bank.model.Money;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
