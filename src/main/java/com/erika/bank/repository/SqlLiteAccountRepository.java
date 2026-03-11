@@ -250,7 +250,6 @@ public class SqlLiteAccountRepository implements AccountRepository {
                 }
                 insert.executeBatch();
             }
-
         }
     }
 }
